@@ -1,23 +1,18 @@
 const User = require("../models/Users")
 const jwt = require("jsonwebtoken")
 const mongoose = require("mongoose")
+const CustomAPIError = require("../errors/custom-error")
 
 const login = async (req, res) => {
-    try {
-        console.log(req.body)
-        const { name, password } = req.body
-        if (!name || !password) {
-            throw new Error("Forneça o usuário e a senha")
-        }
-
-        const id = new Date().getDate()
-        const token = jwt.sign({ id, name }, process.env.JWT_SECRET, { expiresIn: "7d" })
-
-        console.log(name, password)
-        res.status(200).json({ msg: "User created", token })
-    } catch (error) {
-        res.status(500).json({ msg: "error in login" })
+    const { name, password } = req.body
+    if (!name || !password) {
+        throw new CustomAPIError("Forneça o usuário e a senha", 400)
     }
+
+    const id = new Date().getDate()
+    const token = jwt.sign({ id, name }, process.env.JWT_SECRET, { expiresIn: "7d" })
+
+    res.status(200).json({ msg: "User created", token })
 }
 
 const createUser = async (req, res) => {
@@ -25,7 +20,16 @@ const createUser = async (req, res) => {
     } catch (error) {}
 }
 
+const dashboard = async (req, res) => {
+    res.status(200).json({
+        user: req.user.name,
+        msg: `Olá, ${req.user.name}, Bem vindo!`,
+        jwtsecret: `Sua Autorização JWT é ${Math.floor(Math.random() * 100)}`,
+    })
+}
+
 module.exports = {
     login,
     createUser,
+    dashboard,
 }
